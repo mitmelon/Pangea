@@ -1,0 +1,29 @@
+{
+  "name": "mitmelon/pangea",
+  "description": "Incorporate security into your PHP Applications using the Pangea API services.",
+  "keywords": ["security","file intel","url intel", "ip intel", "vault", "domain intel", "user intel", "file scan","audit log", "redact", "embargo"],
+  "homepage": "https://console.pangea.cloud/",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Manomite Limited",
+      "email": "manomitehq@gmail.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable" : true,
+  "require": {
+      "php": ">=5.6.0",
+    "php-curl-class/php-curl-class": "^9.18"
+  },
+  "autoload": {
+      "psr-4": {
+          "Pangea\\": 
+          [
+              "src/"
+          ]
+          
+      }
+  }
+}
