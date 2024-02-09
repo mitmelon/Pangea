@@ -1,5 +1,5 @@
 <?php
-namespace Compress\SDK;
+namespace Pangea;
 /**
  * Pangea PHP SDK Implementations
  *
@@ -10,10 +10,11 @@ namespace Compress\SDK;
 use \Curl\Curl;
 
 class Pangea {
-    protected $transport;
+    private $transport;
     protected $endpoint;
 
     public $version = 'v1';
+    protected $services = [];
 
     public function __construct($token, $service, $csp, $region){
 		
@@ -29,12 +30,21 @@ class Pangea {
     }
 
     protected function available_service(){
-        return $available_services = [
-            'vault',
+        return [
+            'vault'
         ];
     }
 
-    protected function post($path, array $data){
+    public function registerService(...$services){
+        foreach($services as $service){
+            if ($service instanceof \Pangea\PangeaInterface){
+                $service->setParentProperties($this);
+                $this->services[] = $service;
+            }
+        }
+    }
+
+    public function post($path, array $data){
         try {
             return $this->response($this->transport->post($this->endpoint.$path, json_encode($data)));
         } catch(\Exception $e) {
@@ -42,7 +52,7 @@ class Pangea {
         }
     }
 
-    protected function get($path, array $data){
+    public function get($path, array $data){
         try {
             return $this->response($this->transport->get($this->endpoint.$path, $data));
         } catch(\Exception $e) {
@@ -56,5 +66,19 @@ class Pangea {
 
     private function response($response){
         return json_decode(json_encode($response), true);
+    }
+
+    public function __call($methodName, $args){
+        foreach($this->services as $service){
+            if(method_exists($service, $methodName)){
+                $reflection = new \ReflectionMethod($service, $methodName);
+                if($reflection->isPublic()){
+                    return $reflection->invokeArgs($service, $args);
+                }
+                throw new \Exception("Method {$methodName} cannot be publicly accessed.");
+            }
+            throw new \Exception("Method {$methodName} not found in registered services.");
+        }
+
     }
 }

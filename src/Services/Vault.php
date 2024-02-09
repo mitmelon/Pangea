@@ -1,5 +1,6 @@
 <?php
 namespace Pangea\Services;
+use \Pangea\PangeaInterface;
 /**
  * Provides secure storage of secrets, cryptographic keys, and Pangea API Tokens tokens as Vault items. Easily generate, import, and manage secrets and keys to stay compliant and secure.
  *
@@ -8,28 +9,49 @@ namespace Pangea\Services;
  * @version 1.0.0
  */
 
-class Vault extends \Pangea {
+class Vault implements PangeaInterface {
 
     private $allowed_type = ["symmetric_key", "asymmetric_key"];
-    private $allowed_purpose = ["signing", "encryption", "jwt"];
+    private $allowed_purpose = ["encryption", "jwt"];
     private $allowed_state = ["active", "deactivated", "destroyed", "inherited", "suspended", "compromised"];
+    private $asymmetric_algo = ["ED25519", "RSA-PKCS1V15-2048-SHA256", "ES256", "ES384", "ES512", "ES256K", "RSA-PSS-2048-SHA256", "RSA-PSS-3072-SHA256", "RSA-PSS-4096-SHA256", "RSA-PSS-4096-SHA512", "ED25519-DILITHIUM2", "ED448-DILITHIUM3", "SPHINCSPLUS-128-SHAKE256-SIMPLE", "SPHINCSPLUS-128-SHAKE256-ROBUST", "SPHINCSPLUS-128-SHA256-SIMPLE", "SPHINCSPLUS-128-SHA256-ROBUST", "SPHINCSPLUS-192-SHAKE256-SIMPLE", "SPHINCSPLUS-192-SHAKE256-ROBUST", "SPHINCSPLUS-192-SHA256-SIMPLE", "SPHINCSPLUS-192-SHA256-ROBUST", "SPHINCSPLUS-256-SHAKE256-SIMPLE", "SPHINCSPLUS-256-SHAKE256-ROBUST", "SPHINCSPLUS-256-SHA256-SIMPLE", "SPHINCSPLUS-256-SHA256-ROBUST", "RSA-OAEP-2048-SHA1", "RSA-OAEP-2048-SHA256", "RSA-OAEP-2048-SHA512", "RSA-OAEP-3072-SHA1", "RSA-OAEP-3072-SHA256", "RSA-OAEP-3072-SHA512", "RSA-OAEP-4096-SHA1", "RSA-OAEP-4096-SHA256", "RSA-OAEP-4096-SHA512", "ES256", "ES384", "ES512"];
+    private $symmetric_algo_jwt = ["AES-CFB-128", "AES-CFB-256", "AES-GCM-256", "AES-CBC-128", "AES-CBC-256", "HS256", "HS384", "HS512"];
+    private $symmetric_algo_encryption = ["AES-CFB-128", "AES-CFB-256", "AES-GCM-256", "AES-CBC-128", "AES-CBC-256"];
 
-    public function __construct($token, $service, $csp, $region){
-        parent::__construct($token, $service, $csp, $region);
+   
+    protected $travel;
+    protected $version;
+
+    public function setParentProperties(\Pangea\Pangea $parent){
+        $this->travel = $parent;
+        $this->version = $parent->version;
     }
-    
-    public function generateKey(string $type, string $purpose = "signing", string $keyName = null, string $folderName = null, array $metadata = array(), string | array $tags = null, string $rotation_frequency = '10d', string $rotation_state = 'inherited', string $expiration = null){
+
+    public function generateKey(string $type, string $algorithm, string $purpose = "encryption", string $keyName = '', string $folderName = '', object $metadata = new \stdClass(), array $tags = array(), string $rotation_frequency = '10d', string $rotation_state = 'inherited', string $expiration = ''){
         if (!in_array(strtolower($type), $this->allowed_type)) {
             throw new \Exception('Invalid key type. Please choose from the allowed key types ' . implode(', ', $this->allowed_type));
         }
+
+        $algo = str_replace('_key', '', $type).'_algo_'.$purpose;
+        if (!in_array($algorithm, $this->$algo)) {
+            throw new \Exception('Invalid algorithm. Please choose from the allowed types ' . implode(', ', $this->$algo));
+        }
+
         if (!in_array(strtolower($purpose), $this->allowed_purpose)) {
             throw new \Exception('Invalid purpose type. Please choose from the allowed purpose types ' . implode(', ', $this->allowed_purpose));
         }
         if (!in_array(strtolower($rotation_state), $this->allowed_state)) {
             throw new \Exception('Invalid rotation state. Please choose from the allowed state types ' . implode(', ', $this->allowed_state));
         }
-        $response = $this->post('/'.$this->version.'/key/generate', [
+        $expire = array();
+        if(!empty($expiration)){
+            $datetime = \DateTime::createFromFormat('Y-m-d\TH:i:s+', $expiration);
+            $expire = array('expiration' => $datetime);
+        }
+        
+        $response = $this->travel->post('/'.$this->version.'/key/generate', array_merge([
             'type' => $type,
+            'algorithm' => $algorithm,
             'purpose' => $purpose,
             'name' => $keyName,
             'folder' => $folderName,
@@ -37,10 +59,8 @@ class Vault extends \Pangea {
             'tags' => $tags,
             'rotation_frequency' => $rotation_frequency,
             'rotation_state' => $rotation_state,
-            'expiration' => $expiration,
-            'raw' => true,
-            'verbose' => true
-        ]);
+            
+        ], $expire));
         return $response;
     }
 
@@ -48,7 +68,7 @@ class Vault extends \Pangea {
         if (!in_array(strtolower($rotation_state), $this->allowed_state)) {
             throw new \Exception('Invalid rotation state. Please choose from the allowed state types ' . implode(', ', $this->allowed_state));
         }
-        $response = $this->post('/'.$this->version.'/key/rotate', [
+        $response = $this->travel->post('/'.$this->version.'/key/rotate', [
             'id' => $id,
             'rotation_state' => $rotation_state,
             'raw' => true,
@@ -58,7 +78,7 @@ class Vault extends \Pangea {
     }
 
     public function encrypt($id, string $text, string $additional_data = null){
-        $response = $this->post('/'.$this->version.'/key/encrypt', [
+        $response = $this->travel->post('/'.$this->version.'/key/encrypt', [
             'id' => $id,
             'plain_text' => $text,
             'additional_data' => $additional_data,
@@ -69,7 +89,7 @@ class Vault extends \Pangea {
     }
 
     public function decrypt($id, string $cipher, string $additional_data = null){
-        $response = $this->post('/'.$this->version.'/key/decrypt', [
+        $response = $this->travel->post('/'.$this->version.'/key/decrypt', [
             'id' => $id,
             'cipher_text' => $cipher,
             'additional_data' => $additional_data,
@@ -80,7 +100,7 @@ class Vault extends \Pangea {
     }
 
     public function sign($id, string $message){
-        $response = $this->post('/'.$this->version.'/key/sign', [
+        $response = $this->travel->post('/'.$this->version.'/key/sign', [
             'id' => $id,
             'message' => $message,
             'raw' => true,
@@ -90,7 +110,7 @@ class Vault extends \Pangea {
     }
 
     public function verify($id, string $message, string $signature){
-        $response = $this->post('/'.$this->version.'/key/verify', [
+        $response = $this->travel->post('/'.$this->version.'/key/verify', [
             'id' => $id,
             'message' => $message,
             'signature' => $signature,
@@ -100,7 +120,7 @@ class Vault extends \Pangea {
         return $response;
     }
 
-    public function store(string $type, string $purpose = "signing", string $public_key, $private_key, string $keyName = null, string $folderName = null, array $metadata = array(), string | array $tags = null, string $rotation_frequency = '10d', string $rotation_state = 'inherited', string $expiration = null){
+    public function store(string $type, string $public_key, $private_key, string $purpose = "signing", string $keyName = null, string $folderName = null, array $metadata = array(), string | array $tags = null, string $rotation_frequency = '10d', string $rotation_state = 'inherited', string $expiration = null){
        
         if (!in_array(strtolower($type), $this->allowed_type)) {
             throw new \Exception('Invalid key type. Please choose from the allowed key types ' . implode(', ', $this->allowed_type));
@@ -111,7 +131,7 @@ class Vault extends \Pangea {
         if (!in_array(strtolower($rotation_state), $this->allowed_state)) {
             throw new \Exception('Invalid rotation state. Please choose from the allowed state types ' . implode(', ', $this->allowed_state));
         }
-        $response = $this->post('/'.$this->version.'/key/store', [
+        $response = $this->travel->post('/'.$this->version.'/key/store', [
             'type' => $type,
             'purpose' => $purpose,
             'public_key' => $public_key,
@@ -130,7 +150,7 @@ class Vault extends \Pangea {
     }
 
     public function createFolder($folderName, string $path, array $metadata = null, string | array $tags = null, string $rotation_frequency = '10d', string $rotation_state = 'inherited', string $expiration = null){
-        $response = $this->post('/'.$this->version.'/folder/create', [
+        $response = $this->travel->post('/'.$this->version.'/folder/create', [
             'name' => $folderName,
             'folder' => $path,
             'metadata' => $metadata,
@@ -145,7 +165,7 @@ class Vault extends \Pangea {
     }
 
     public function signJWT($id, string $payload){
-        $response = $this->post('/'.$this->version.'/key/sign/jwt', [
+        $response = $this->travel->post('/'.$this->version.'/key/sign/jwt', [
             'id' => $id,
             'payload' => $payload,
             'raw' => true,
@@ -155,7 +175,7 @@ class Vault extends \Pangea {
     }
 
     public function verifyJWT($jws){
-        $response = $this->post('/'.$this->version.'/key/verify/jwt', [
+        $response = $this->travel->post('/'.$this->version.'/key/verify/jwt', [
             'jws' => $jws,
             'raw' => true,
             'verbose' => true
@@ -164,16 +184,14 @@ class Vault extends \Pangea {
     }
 
     public function getJWT($id){
-        $response = $this->post('/'.$this->version.'/key/get/jwt', [
-            'id' => $id,
-            'raw' => true,
-            'verbose' => true
+        $response = $this->travel->post('/'.$this->version.'/key/get/jwt', [
+            'id' => $id
         ]);
         return $response;
     }
 
     public function rotateSecret($id, $secret = null){
-        $response = $this->post('/'.$this->version.'/key/secret/rotate', [
+        $response = $this->travel->post('/'.$this->version.'/key/secret/rotate', [
             'id' => $id,
             'secret' => $secret,
             'raw' => true,
@@ -194,7 +212,7 @@ class Vault extends \Pangea {
             throw new \Exception('Invalid rotation state. Please choose from the allowed state types ' . implode(', ', $this->allowed_state));
         }
 
-        $response = $this->post('/'.$this->version.'/key/secret/store', [
+        $response = $this->travel->post('/'.$this->version.'/key/secret/store', [
             'type' => $type,
             'secret' => $secret,
             'name' => $name,
@@ -213,7 +231,7 @@ class Vault extends \Pangea {
 
     //Retrieve a secret, key or folder, and any associated information.
     public function getKey($id, $secret = null){
-        $response = $this->post('/'.$this->version.'/get', [
+        $response = $this->travel->post('/'.$this->version.'/get', [
             'id' => $id,
             'raw' => true,
             'verbose' => true
@@ -233,7 +251,7 @@ class Vault extends \Pangea {
             throw new \Exception('Invalid order by type. Please choose from the allowed order by types ' . implode(', ', $order_by_type));
         }
 
-        $response = $this->post('/'.$this->version.'/list', [
+        $response = $this->travel->post('/'.$this->version.'/list', [
             'filter' => $filter,
             'size' => $size,
             'order' => $order,
@@ -254,7 +272,7 @@ class Vault extends \Pangea {
             throw new \Exception('Invalid allowed type. Please choose from the allowed types ' . implode(', ', $allowed_item_type));
         }
 
-        $response = $this->post('/'.$this->version.'/update', [
+        $response = $this->travel->post('/'.$this->version.'/update', [
             'id' => $id,
             'name' => $name,
             'folder' => $folderPath,
@@ -272,14 +290,14 @@ class Vault extends \Pangea {
 
     //Delete a secret, key or folder.
     public function delete($id){
-        $response = $this->post('/'.$this->version.'/delete', [
+        $response = $this->travel->post('/'.$this->version.'/delete', [
             'id' => $id,
         ]);
         return $response;
     }
 
     public function changeState(string $id, string $state, string $destroy_period = '1d'){
-        $response = $this->post('/'.$this->version.'/state/change', [
+        $response = $this->travel->post('/'.$this->version.'/state/change', [
             'id' => $id,
             'state' => $state,
             'destroy_period' => $destroy_period

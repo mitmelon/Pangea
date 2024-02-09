@@ -49,10 +49,14 @@ To use this project, [create an account](https://pangea.cloud) and plug your cre
 require_once __DIR__."/vendor/autoload.php";
 
 // Initialize library class
-$pangeaVaultClient = new Pangea\Vault($token, $service, $csp, $region);
+$pangea = new Pangea\Vault($token, $service, $csp, $region);
 
-$pangeaVaultClient->generateKey(string $type, string $purpose = "signing", string $keyName = null, string $folderName = null, array $metadata = array(), string | array $tags = null, string $rotation_frequency = '10d', string $rotation_state = 'inherited', string $expiration = null)
+//Register the services you want to use
+$pangea->registerService(
+    new \Pangea\Services\Vault
+);
 
+print_r($pangea->generateKey('symmetric_key', 'AES-GCM-256'));
 
 ```
 
