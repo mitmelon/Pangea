@@ -15,7 +15,7 @@
 <a href="https://github.com/mitmelon/pangea/graphs/contributors"><img alt="GitHub contributors" src="https://img.shields.io/github/contributors/mitmelon/pangea?color=2b9348"></a>
 <a href="https://github.com/mitmelon/pangea/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mitmelon/pangea?color=2b9348" alt="License Badge"/></a> [![Total Downloads](http://poser.pugx.org/mitmelon/pangea/downloads)](https://packagist.org/packages/mitmelon/pangea)
 
-<i>If you love my project and wish to assist me to keep working on this project. Please follow this link <a href="https://flutterwave.com/donate/oq61dyrjk9xh">https://flutterwave.com/donate/oq61dyrjk9xh</a> to donate.</i>
+<i>If you love this project and wish to assist me to keep working on it. Please follow this link <a href="https://flutterwave.com/donate/ajcv56i67fan">https://flutterwave.com/donate/ajcv56i67fan</a> to donate. If you find it hard donating please contact me at manomitehq@gmail.com for more payment methods. Please no amount is too small.</i>
 
 </div>
 
@@ -24,13 +24,13 @@
   - [x] Add vault [Provides secure storage of secrets, cryptographic keys, and Pangea API Tokens tokens as Vault items]
   - [x] Add IP Intel [Malicious behavior check on IP]
   - [x] Add Domain Intel [Allows you to retrieve intelligence about domain names]
-  - [ ] Add URL Intel [Malicious behavior check on URL]
-  - [ ] Add User Intel [Discover if information was disclosed in a breach]
-  - [ ] Add File Intel [Enables you to submit a file's hash to retrieve its reputation]
-  - [ ] Add File Scan [Enables you to upload files to be scanned for malicious content]
+  - [x] Add URL Intel [Malicious behavior check on URL]
+  - [x] Add User Intel [Discover if information was disclosed in a breach]
+  - [x] Add File Intel [Enables you to submit a file's hash to retrieve its reputation]
+  - [x] Add File Scan [Enables you to upload files to be scanned for malicious content]
   - [ ] Add audit log [A managed audit log store that offers transparent, unalterable, and cryptographically]
   - [ ] Add redact [Remove sensitive information from free-from text and structured data]
-  - [ ] Add Embargo [Determine if there is a trade embargo against the country of origin for an IP address]
+  - [x] Add Embargo [Determine if there is a trade embargo against the country of origin for an IP address]
   - [ ] Add AuthN [A fully managed service to deliver secure user registration and authentication flows, integrated into your application]
 
 
@@ -54,15 +54,21 @@ $pangea = new Pangea\Vault($token, $service, $csp, $region);
 
 //Registers all services or select the one you need
 $pangea->registerService(
-    $pangea->available_service()
-    //or like this 'vault', 'ip-intel'
+    $pangea->available_service() // this registers all services
+    //or register like this 'vault', 'ip-intel' for single or more services
+
+    //You can printout $pangea->available_service() on a separate line to see all the supported services
 ); 
 
 print_r($pangea->generateKey('symmetric_key', 'AES-GCM-256'));
 
 ```
 
-More documentation and implementations coming soon.
+## Documentation
+
+Please see [Pangea Docs](https://pangea.cloud/docs/api/) for more informations. 
+
+You can also check the [Service Docs](/src/Services/) to see the services and methods implemented.
 
 # Changelog
 

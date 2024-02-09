@@ -10,7 +10,7 @@ namespace Pangea;
 use \Curl\Curl;
 
 class Pangea {
-    private $transport;
+    public $transport;
 
     public $version = 'v1';
     protected $services = [];
@@ -33,7 +33,13 @@ class Pangea {
         return [
             'vault',
             'ip-intel',
-            'domain-intel'
+            'domain-intel',
+            'url-intel',
+            'user-intel',
+            'file-intel',
+            'file-scan',
+            'audit',
+            'embargo'
         ];
     }
 
