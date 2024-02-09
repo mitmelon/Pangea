@@ -23,7 +23,7 @@
 
   - [x] Add vault [Provides secure storage of secrets, cryptographic keys, and Pangea API Tokens tokens as Vault items]
   - [x] Add IP Intel [Malicious behavior check on IP]
-  - [ ] Add Domain Intel [Allows you to retrieve intelligence about domain names]
+  - [x] Add Domain Intel [Allows you to retrieve intelligence about domain names]
   - [ ] Add URL Intel [Malicious behavior check on URL]
   - [ ] Add User Intel [Discover if information was disclosed in a breach]
   - [ ] Add File Intel [Enables you to submit a file's hash to retrieve its reputation]

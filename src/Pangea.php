@@ -32,7 +32,8 @@ class Pangea {
     public function available_service(){
         return [
             'vault',
-            'ip-intel'
+            'ip-intel',
+            'domain-intel'
         ];
     }
 
