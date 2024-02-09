@@ -23,7 +23,7 @@ class IPINTEL implements PangeaInterface {
         $this->url = $endpoint;
     }
 
-    public function ip_reputation(array $ip){
+    public function reputation(array $ip){
         $response = $this->travel->post($this->url.'/'.$this->version.'/reputation', [
             'ips' => $ip,
             'raw' => true,
@@ -32,6 +32,7 @@ class IPINTEL implements PangeaInterface {
         return $response;
     }
 
+    //Retrieve the domain name associated with an IP address.
     public function domain(array $ip){
         $response = $this->travel->post($this->url.'/'.$this->version.'/domain', [
             'ips' => $ip,
@@ -41,7 +42,31 @@ class IPINTEL implements PangeaInterface {
         return $response;
     }
 
+    public function proxy(array $ip){
+        $response = $this->travel->post($this->url.'/'.$this->version.'/proxy', [
+            'ips' => $ip,
+            'raw' => true,
+            'verbose' => true
+        ]);
+        return $response;
+    }
 
+    public function vpn(array $ip){
+        $response = $this->travel->post($this->url.'/'.$this->version.'/vpn', [
+            'ips' => $ip,
+            'raw' => true,
+            'verbose' => true
+        ]);
+        return $response;
+    }
 
+    public function geolocate(array $ip){
+        $response = $this->travel->post($this->url.'/'.$this->version.'/geolocate', [
+            'ips' => $ip,
+            'raw' => true,
+            'verbose' => true
+        ]);
+        return $response;
+    }
    
 }

@@ -22,7 +22,7 @@
 ### Todo Features:
 
   - [x] Add vault [Provides secure storage of secrets, cryptographic keys, and Pangea API Tokens tokens as Vault items]
-  - [ ] Add IP Intel [Malicious behavior check on IP]
+  - [x] Add IP Intel [Malicious behavior check on IP]
   - [ ] Add Domain Intel [Allows you to retrieve intelligence about domain names]
   - [ ] Add URL Intel [Malicious behavior check on URL]
   - [ ] Add User Intel [Discover if information was disclosed in a breach]
