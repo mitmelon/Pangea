@@ -11,42 +11,58 @@ use \Curl\Curl;
 
 class Pangea {
     private $transport;
-    protected $endpoint;
 
     public $version = 'v1';
     protected $services = [];
+    protected $token;
+    protected $region;
+    protected $csp;
 
-    public function __construct($token, $service, $csp, $region){
+    public function __construct($token, $csp, $region){
 		
-        $available_services = $this->available_service();
-        if (!in_array(strtolower($service), $available_services)) {
-            throw new \Exception('Invalid service. Please choose from the allowed service types ' . implode(', ', $available_services));
-        }
-
-        $this->endpoint = strtolower("https://{$service}.{$csp}.{$region}.pangea.cloud");
         $this->transport = new Curl();
         $this->transport->setHeader('Authorization', "Bearer {$token}");
         $this->transport->setHeader('Content-Type', 'application/json');
+
+        $this->token = $token;
+        $this->region = $region;
+        $this->csp = $csp;
     }
 
-    protected function available_service(){
+    public function available_service(){
         return [
-            'vault'
+            'vault',
+            'ip-intel'
         ];
     }
 
     public function registerService(...$services){
         foreach($services as $service){
+            if (is_array($service)){
+                foreach($service as $ser){
+                    $this->registerService($ser);
+                }
+                return null;
+            }
+            $available_services = $this->available_service();
+            if (!in_array(strtolower($service), $available_services)) {
+                throw new \Exception('Invalid service. Please choose from the allowed service types ' . implode(', ', $available_services));
+            }
+            $endpoint = strtolower("https://{$service}.{$this->csp}.{$this->region}.pangea.cloud");
+            $linked = str_replace('-', '', strtoupper($service));
+            $class = "Pangea\\Services\\{$linked}";
+            $service = new $class;
             if ($service instanceof \Pangea\PangeaInterface){
-                $service->setParentProperties($this);
+                $service->setParentProperties($this, $endpoint);
                 $this->services[] = $service;
             }
+            
         }
     }
-
+    
     public function post($path, array $data){
         try {
-            return $this->response($this->transport->post($this->endpoint.$path, json_encode($data)));
+            return $this->response($this->transport->post($path, json_encode($data)));
         } catch(\Exception $e) {
             return $this->error($e->getMessage());
         }
@@ -54,7 +70,7 @@ class Pangea {
 
     public function get($path, array $data){
         try {
-            return $this->response($this->transport->get($this->endpoint.$path, $data));
+            return $this->response($this->transport->get($path, $data));
         } catch(\Exception $e) {
             return $this->error($e->getMessage());
         }
@@ -77,8 +93,6 @@ class Pangea {
                 }
                 throw new \Exception("Method {$methodName} cannot be publicly accessed.");
             }
-            throw new \Exception("Method {$methodName} not found in registered services.");
         }
-
     }
 }

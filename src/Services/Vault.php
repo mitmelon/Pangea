@@ -22,10 +22,12 @@ class Vault implements PangeaInterface {
     protected $travel;
 
     protected $version;
+    protected $url;
 
-    public function setParentProperties(\Pangea\Pangea $parent){
+    public function setParentProperties(\Pangea\Pangea $parent, $endpoint){
         $this->travel = $parent;
         $this->version = $parent->version;
+        $this->url = $endpoint;
     }
 
     public function generateKey(string $type, string $algorithm, string $purpose = "encryption", string $keyName = '', string $folderName = '', object $metadata = new \stdClass(), array $tags = array(), string $rotation_frequency = '10d', string $rotation_state = 'inherited', string $expiration = ''){
@@ -63,7 +65,7 @@ class Vault implements PangeaInterface {
             'rotation_state' => $rotation_state,
         ], $expire));
 
-        $response = $this->travel->post('/'.$this->version.'/key/generate', array_merge([
+        $response = $this->travel->post($this->url.'/'.$this->version.'/key/generate', array_merge([
             'type' => $type,
             'algorithm' => $algorithm,
             'purpose' => $purpose,
@@ -81,7 +83,7 @@ class Vault implements PangeaInterface {
         if (!in_array(strtolower($rotation_state), $this->allowed_state)) {
             throw new \Exception('Invalid rotation state. Please choose from the allowed state types ' . implode(', ', $this->allowed_state));
         }
-        $response = $this->travel->post('/'.$this->version.'/key/rotate', [
+        $response = $this->travel->post($this->url.'/'.$this->version.'/key/rotate', [
             'id' => $id,
             'rotation_state' => $rotation_state
         ]);
@@ -89,7 +91,7 @@ class Vault implements PangeaInterface {
     }
 
     public function encrypt($id, string $text, string $additional_data = ''){
-        $response = $this->travel->post('/'.$this->version.'/key/encrypt', [
+        $response = $this->travel->post($this->url.'/'.$this->version.'/key/encrypt', [
             'id' => $id,
             'plain_text' => base64_encode($text),
             'additional_data' => $additional_data,
@@ -98,7 +100,7 @@ class Vault implements PangeaInterface {
     }
 
     public function decrypt($id, string $cipher, string $additional_data = ''){
-        $response = $this->travel->post('/'.$this->version.'/key/decrypt', [
+        $response = $this->travel->post($this->url.'/'.$this->version.'/key/decrypt', [
             'id' => $id,
             'cipher_text' => $cipher,
             'additional_data' => $additional_data,
@@ -111,7 +113,7 @@ class Vault implements PangeaInterface {
     }
 
     public function sign($id, string $message){
-        $response = $this->travel->post('/'.$this->version.'/key/sign', [
+        $response = $this->travel->post($this->url.'/'.$this->version.'/key/sign', [
             'id' => $id,
             'message' => $message,
         ]);
@@ -119,7 +121,7 @@ class Vault implements PangeaInterface {
     }
 
     public function verify($id, string $message, string $signature){
-        $response = $this->travel->post('/'.$this->version.'/key/verify', [
+        $response = $this->travel->post($this->url.'/'.$this->version.'/key/verify', [
             'id' => $id,
             'message' => $message,
             'signature' => $signature,
@@ -148,7 +150,7 @@ class Vault implements PangeaInterface {
         if(!empty($expiration)){
             $expire = array('expiration' => $expiration);
         }
-        $response = $this->travel->post('/'.$this->version.'/key/store', array_merge([
+        $response = $this->travel->post($this->url.'/'.$this->version.'/key/store', array_merge([
             'type' => $type,
             'algorithm' => $algorithm,
             'purpose' => $purpose,
@@ -170,7 +172,7 @@ class Vault implements PangeaInterface {
         if(!empty($expiration)){
             $expire = array('expiration' => $expiration);
         }
-        $response = $this->travel->post('/'.$this->version.'/folder/create', array_merge([
+        $response = $this->travel->post($this->url.'/'.$this->version.'/folder/create', array_merge([
             'name' => $folderName,
             'folder' => $path,
             'metadata' => $metadata,
@@ -183,7 +185,7 @@ class Vault implements PangeaInterface {
     }
 
     public function signJWT($id, string $payload){
-        $response = $this->travel->post('/'.$this->version.'/key/sign/jwt', [
+        $response = $this->travel->post($this->url.'/'.$this->version.'/key/sign/jwt', [
             'id' => $id,
             'payload' => $payload,
         ]);
@@ -191,21 +193,21 @@ class Vault implements PangeaInterface {
     }
 
     public function verifyJWT($jws){
-        $response = $this->travel->post('/'.$this->version.'/key/verify/jwt', [
+        $response = $this->travel->post($this->url.'/'.$this->version.'/key/verify/jwt', [
             'jws' => $jws,
         ]);
         return $response;
     }
 
     public function getJWT($id){
-        $response = $this->travel->post('/'.$this->version.'/key/get/jwt', [
+        $response = $this->travel->post($this->url.'/'.$this->version.'/key/get/jwt', [
             'id' => $id
         ]);
         return $response;
     }
 
     public function rotateSecret($id, $secret = ''){
-        $response = $this->travel->post('/'.$this->version.'/key/secret/rotate', [
+        $response = $this->travel->post($this->url.'/'.$this->version.'/key/secret/rotate', [
             'id' => $id,
             'secret' => $secret,
             'raw' => true,
@@ -231,7 +233,7 @@ class Vault implements PangeaInterface {
             $expire = array('expiration' => $expiration);
         }
 
-        $response = $this->travel->post('/'.$this->version.'/key/secret/store', array_merge([
+        $response = $this->travel->post($this->url.'/'.$this->version.'/key/secret/store', array_merge([
             'type' => $type,
             'secret' => $secret,
             'name' => $name,
@@ -248,7 +250,7 @@ class Vault implements PangeaInterface {
 
     //Retrieve a secret, key or folder, and any associated information.
     public function getKey($id, $secret = ''){
-        $response = $this->travel->post('/'.$this->version.'/get', [
+        $response = $this->travel->post($this->url.'/'.$this->version.'/get', [
             'id' => $id,
             'raw' => true,
             'verbose' => true
@@ -268,7 +270,7 @@ class Vault implements PangeaInterface {
             throw new \Exception('Invalid order by type. Please choose from the allowed order by types ' . implode(', ', $order_by_type));
         }
 
-        $response = $this->travel->post('/'.$this->version.'/list', [
+        $response = $this->travel->post($this->url.'/'.$this->version.'/list', [
             'filter' => $filter,
             'size' => $size,
             'order' => $order,
@@ -294,7 +296,7 @@ class Vault implements PangeaInterface {
             $expire = array('expiration' => $expiration);
         }
 
-        $response = $this->travel->post('/'.$this->version.'/update', array_merge([
+        $response = $this->travel->post($this->url.'/'.$this->version.'/update', array_merge([
             'id' => $id,
             'name' => $name,
             'folder' => $folderPath,
@@ -310,14 +312,14 @@ class Vault implements PangeaInterface {
 
     //Delete a secret, key or folder.
     public function delete($id){
-        $response = $this->travel->post('/'.$this->version.'/delete', [
+        $response = $this->travel->post($this->url.'/'.$this->version.'/delete', [
             'id' => $id,
         ]);
         return $response;
     }
 
     public function changeState(string $id, string $state, string $destroy_period = '1d'){
-        $response = $this->travel->post('/'.$this->version.'/state/change', [
+        $response = $this->travel->post($this->url.'/'.$this->version.'/state/change', [
             'id' => $id,
             'state' => $state,
             'destroy_period' => $destroy_period

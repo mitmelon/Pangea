@@ -52,10 +52,11 @@ require_once __DIR__."/vendor/autoload.php";
 // Initialize library class
 $pangea = new Pangea\Vault($token, $service, $csp, $region);
 
-//Register the services you want to use
+//Registers all services or select the one you need
 $pangea->registerService(
-    new \Pangea\Services\Vault
-);
+    $pangea->available_service()
+    //or like this 'vault', 'ip-intel'
+); 
 
 print_r($pangea->generateKey('symmetric_key', 'AES-GCM-256'));
 
