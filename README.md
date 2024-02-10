@@ -50,13 +50,12 @@ To use this project, [create an account](https://pangea.cloud) and plug your cre
 require_once __DIR__."/vendor/autoload.php";
 
 // Initialize library class
-$pangea = new Pangea\Vault($token, $service, $csp, $region);
+$pangea = new Pangea($token, $service, $csp, $region);
 
 //Registers all services or select the one you need
 $pangea->registerService(
     $pangea->available_service() // this registers all services
     //or register like this 'vault', 'ip-intel' for single or more services
-
     //You can printout $pangea->available_service() on a separate line to see all the supported services
 ); 
 

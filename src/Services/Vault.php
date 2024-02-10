@@ -9,7 +9,7 @@ use \Pangea\PangeaInterface;
  * @version 1.0.0
  */
 
-class Vault implements PangeaInterface {
+class VAULT implements PangeaInterface {
 
     private $allowed_type = ["symmetric_key", "asymmetric_key"];
     private $allowed_purpose = ["encryption", "jwt"];
@@ -52,18 +52,6 @@ class Vault implements PangeaInterface {
         if(!empty($expiration)){
             $expire = array('expiration' => $expiration);
         }
-
-        print_r(array_merge([
-            'type' => $type,
-            'algorithm' => $algorithm,
-            'purpose' => $purpose,
-            'name' => $keyName,
-            'folder' => $folderName,
-            'metadata' => $metadata,
-            'tags' => $tags,
-            'rotation_frequency' => $rotation_frequency,
-            'rotation_state' => $rotation_state,
-        ], $expire));
 
         $response = $this->travel->post($this->url.'/'.$this->version.'/key/generate', array_merge([
             'type' => $type,
