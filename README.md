@@ -28,8 +28,8 @@
   - [x] Add User Intel [Discover if information was disclosed in a breach]
   - [x] Add File Intel [Enables you to submit a file's hash to retrieve its reputation]
   - [x] Add File Scan [Enables you to upload files to be scanned for malicious content]
-  - [ ] Add audit log [A managed audit log store that offers transparent, unalterable, and cryptographically]
-  - [ ] Add redact [Remove sensitive information from free-from text and structured data]
+  - [x] Add audit log [A managed audit log store that offers transparent, unalterable, and cryptographically]
+  - [x] Add redact [Remove sensitive information from free-from text and structured data]
   - [x] Add Embargo [Determine if there is a trade embargo against the country of origin for an IP address]
   - [ ] Add AuthN [A fully managed service to deliver secure user registration and authentication flows, integrated into your application]
 

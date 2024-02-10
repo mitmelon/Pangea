@@ -39,7 +39,8 @@ class Pangea {
             'file-intel',
             'file-scan',
             'audit',
-            'embargo'
+            'embargo',
+            'redact'
         ];
     }
 
@@ -69,6 +70,7 @@ class Pangea {
     
     public function post($path, array $data){
         try {
+            print_r($path);
             return $this->response($this->transport->post($path, json_encode($data)));
         } catch(\Exception $e) {
             return $this->error($e->getMessage());
