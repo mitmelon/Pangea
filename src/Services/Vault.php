@@ -16,11 +16,8 @@ class VAULT implements PangeaInterface {
     private $allowed_state = ["active", "deactivated", "destroyed", "inherited", "suspended", "compromised"];
     private $asymmetric_algo = ["ED25519", "RSA-PKCS1V15-2048-SHA256", "ES256", "ES384", "ES512", "ES256K", "RSA-PSS-2048-SHA256", "RSA-PSS-3072-SHA256", "RSA-PSS-4096-SHA256", "RSA-PSS-4096-SHA512", "ED25519-DILITHIUM2", "ED448-DILITHIUM3", "SPHINCSPLUS-128-SHAKE256-SIMPLE", "SPHINCSPLUS-128-SHAKE256-ROBUST", "SPHINCSPLUS-128-SHA256-SIMPLE", "SPHINCSPLUS-128-SHA256-ROBUST", "SPHINCSPLUS-192-SHAKE256-SIMPLE", "SPHINCSPLUS-192-SHAKE256-ROBUST", "SPHINCSPLUS-192-SHA256-SIMPLE", "SPHINCSPLUS-192-SHA256-ROBUST", "SPHINCSPLUS-256-SHAKE256-SIMPLE", "SPHINCSPLUS-256-SHAKE256-ROBUST", "SPHINCSPLUS-256-SHA256-SIMPLE", "SPHINCSPLUS-256-SHA256-ROBUST", "RSA-OAEP-2048-SHA1", "RSA-OAEP-2048-SHA256", "RSA-OAEP-2048-SHA512", "RSA-OAEP-3072-SHA1", "RSA-OAEP-3072-SHA256", "RSA-OAEP-3072-SHA512", "RSA-OAEP-4096-SHA1", "RSA-OAEP-4096-SHA256", "RSA-OAEP-4096-SHA512", "ES256", "ES384", "ES512"];
     private $symmetric_algo_jwt = ["AES-CFB-128", "AES-CFB-256", "AES-GCM-256", "AES-CBC-128", "AES-CBC-256", "HS256", "HS384", "HS512"];
-
     private $symmetric_algo_encryption = ["AES-CFB-128", "AES-CFB-256", "AES-GCM-256", "AES-CBC-128", "AES-CBC-256"];
-
     protected $travel;
-
     protected $version;
     protected $url;
 
@@ -43,7 +40,6 @@ class VAULT implements PangeaInterface {
         if (!in_array($algorithm, $this->$algo)) {
             throw new \Exception('Invalid algorithm. Please choose from the allowed types ' . implode(', ', $this->$algo));
         }
-
 
         if (!in_array(strtolower($rotation_state), $this->allowed_state)) {
             throw new \Exception('Invalid rotation state. Please choose from the allowed state types ' . implode(', ', $this->allowed_state));
